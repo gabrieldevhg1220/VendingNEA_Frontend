@@ -28,24 +28,22 @@
         <h2>Gestión de Acuerdos</h2>
         
         <div class="d-flex gap-3 mb-4">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#acuerdoModal">
+            <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#acuerdoModal">
                 Agregar Acuerdo
             </button>
-            <button id="btnProximos" class="btn btn-warning">
+            <button id="btnProximos" class="btn btn-warning btn-lg">
                 Próximos a Finalizar
             </button>
         </div>
 
         <div class="row" id="acuerdosList"></div>
 
-        <div id="seccionProximos" style="display: none; margin-top: 2rem;">
-            <h3 class="text-warning">Acuerdos Próximos a Finalizar</h3>
+        <div id="seccionProximos" style="display: none; margin-top: 3rem;">
+            <h3 class="text-warning fw-bold">Acuerdos Próximos a Finalizar</h3>
             <div class="row" id="proximosList"></div>
         </div>
     </div>
 
-    <!-- Modal para Acuerdo -->
-    -->
     <div class="modal fade" id="acuerdoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -94,20 +92,19 @@
     <script>
         loadAcuerdos();
 
-        // Control del botón "Próximos a Finalizar"
         document.getElementById('btnProximos').addEventListener('click', async function () {
             const seccion = document.getElementById('seccionProximos');
             if (seccion.style.display === 'none' || seccion.style.display === '') {
                 seccion.style.display = 'block';
                 this.classList.remove('btn-warning');
                 this.classList.add('btn-outline-warning');
-                this.textContent = 'Ocultar Próximos';
-                await loadProximosAcuerdos(); // Carga solo cuando se abre
+                this.innerHTML = 'Ocultar Próximos';
+                await loadProximosAcuerdos();
             } else {
                 seccion.style.display = 'none';
                 this.classList.remove('btn-outline-warning');
                 this.classList.add('btn-warning');
-                this.textContent = 'Próximos a Finalizar';
+                this.innerHTML = 'Próximos a Finalizar';
             }
         });
     </script>

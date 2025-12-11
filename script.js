@@ -1,5 +1,11 @@
 const apiUrl = 'http://localhost:5048/api'; // Ajusta al port de tu backend
 
+// Cargar SweetAlert2 desde CDN
+const swLink = document.createElement('script');
+swLink.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+swLink.onload = () => console.log('SweetAlert2 cargado');
+document.head.appendChild(swLink);
+
 // ==================== MÁQUINAS ====================
 async function loadMaquinas() {
     const response = await fetch(`${apiUrl}/Maquinas`);
@@ -92,7 +98,127 @@ async function loadAcuerdos() {
     });
 }
 
-// El resto del archivo (edit, save, delete) queda exactamente igual que tenías
+// ==================== PRÓXIMOS A FINALIZAR (INFORMACIÓN COMPLETA) ====================
+async function loadProximosAcuerdos() {
+    const response = await fetch(`${apiUrl}/Acuerdos/proximosAFinalizar`);
+    const proximos = await response.json();
+    const list = document.getElementById('proximosList');
+    list.innerHTML = '';
+
+    if (proximos.length === 0) {
+        list.innerHTML = '<div class="col-12"><p class="text-muted text-center">No hay acuerdos próximos a finalizar en los próximos 30 días.</p></div>';
+        return;
+    }
+
+    proximos.forEach(a => {
+        const card = `
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">Acuerdo #${a.idAcuerdo} (Próximo a vencer)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><strong>Establecimiento ID:</strong> ${a.idEstablecimiento}</p>
+                        <p class="card-text"><strong>Inicio:</strong> ${new Date(a.fechaInicio).toLocaleDateString('es-AR')}</p>
+                        <p class="card-text"><strong>Fin:</strong> <strong class="text-danger">${new Date(a.fechaFin).toLocaleDateString('es-AR')}</strong></p>
+                        <p class="card-text"><strong>Tipo Condición:</strong> ${a.tipoCondicion}</p>
+                        <p class="card-text"><strong>Valor:</strong> $${parseFloat(a.valorCondicion).toFixed(2)}</p>
+                    </div>
+                </div>
+            </div>`;
+        list.innerHTML += card;
+    });
+}
+
+// ==================== ELIMINAR CON SWEETALERT2 ====================
+async function deleteMaquina(id) {
+    const result = await Swal.fire({
+        title: '¿Eliminar máquina?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(`${apiUrl}/Maquinas/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            Swal.fire('¡Eliminada!', 'La máquina ha sido eliminada.', 'success');
+            loadMaquinas();
+        } else {
+            const error = await response.json();
+            Swal.fire('Error', error.message || 'No se pudo eliminar la máquina', 'error');
+        }
+    } catch (err) {
+        Swal.fire('Error', 'No se pudo conectar al servidor', 'error');
+    }
+}
+
+async function deleteEmpleado(id) {
+    const result = await Swal.fire({
+        title: '¿Eliminar empleado?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(`${apiUrl}/Empleados/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            Swal.fire('¡Eliminado!', 'El empleado ha sido eliminado.', 'success');
+            loadEmpleados();
+        } else {
+            const error = await response.json();
+            Swal.fire('Error', error.message || 'No se pudo eliminar el empleado', 'error');
+        }
+    } catch (err) {
+        Swal.fire('Error', 'No se pudo conectar al servidor', 'error');
+    }
+}
+
+async function deleteAcuerdo(id) {
+    const result = await Swal.fire({
+        title: '¿Eliminar acuerdo?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(`${apiUrl}/Acuerdos/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            Swal.fire('¡Eliminado!', 'El acuerdo ha sido eliminado.', 'success');
+            loadAcuerdos();
+            if (document.getElementById('seccionProximos')?.style.display === 'block') {
+                loadProximosAcuerdos();
+            }
+        } else {
+            const error = await response.json();
+            Swal.fire('Error', error.message || 'No se pudo eliminar el acuerdo', 'error');
+        }
+    } catch (err) {
+        Swal.fire('Error', 'No se pudo conectar al servidor', 'error');
+    }
+}
+
+// ==================== EL RESTO QUEDA IGUAL ====================
 function editMaquina(maquina) {
     document.getElementById('idMaquina').value = maquina.idMaquina;
     document.getElementById('nroSerie').value = maquina.nroSerie;
@@ -104,7 +230,6 @@ function editMaquina(maquina) {
     document.getElementById('idAcuerdo').value = maquina.idAcuerdo;
     new bootstrap.Modal(document.getElementById('maquinaModal')).show();
 }
-
 async function saveMaquina() {
     const id = document.getElementById('idMaquina').value;
     const maquina = {
@@ -127,14 +252,6 @@ async function saveMaquina() {
     bootstrap.Modal.getInstance(document.getElementById('maquinaModal')).hide();
     loadMaquinas();
 }
-
-async function deleteMaquina(id) {
-    if (confirm('¿Eliminar?')) {
-        await fetch(`${apiUrl}/Maquinas/${id}`, { method: 'DELETE' });
-        loadMaquinas();
-    }
-}
-
 function editEmpleado(empleado) {
     document.getElementById('legajoEmpleado').value = empleado.legajo;
     document.getElementById('nombreEmpleado').value = empleado.nombre;
@@ -145,7 +262,6 @@ function editEmpleado(empleado) {
     document.getElementById('fechaIngresoEmpleado').value = empleado.fechaIngreso.split('T')[0];
     new bootstrap.Modal(document.getElementById('empleadoModal')).show();
 }
-
 async function saveEmpleado() {
     const id = document.getElementById('legajoEmpleado').value;
     const empleado = {
@@ -167,14 +283,6 @@ async function saveEmpleado() {
     bootstrap.Modal.getInstance(document.getElementById('empleadoModal')).hide();
     loadEmpleados();
 }
-
-async function deleteEmpleado(id) {
-    if (confirm('¿Eliminar?')) {
-        await fetch(`${apiUrl}/Empleados/${id}`, { method: 'DELETE' });
-        loadEmpleados();
-    }
-}
-
 function editRepositor(repositor) {
     document.getElementById('legajoRepositor').value = repositor.legajo;
     document.getElementById('categoriaLicencia').value = repositor.categoriaLicencia;
@@ -182,7 +290,6 @@ function editRepositor(repositor) {
     document.getElementById('zonaAsignada').value = repositor.zonaAsignada;
     new bootstrap.Modal(document.getElementById('repositorModal')).show();
 }
-
 async function saveRepositor() {
     const id = document.getElementById('legajoRepositor').value;
     const repositor = {
@@ -201,21 +308,18 @@ async function saveRepositor() {
     bootstrap.Modal.getInstance(document.getElementById('repositorModal')).hide();
     loadRepositores();
 }
-
 async function deleteRepositor(id) {
     if (confirm('¿Eliminar?')) {
         await fetch(`${apiUrl}/Repositores/${id}`, { method: 'DELETE' });
         loadRepositores();
     }
 }
-
 function editTecnico(tecnico) {
     document.getElementById('legajoTecnico').value = tecnico.legajo;
     document.getElementById('especialidad').value = tecnico.especialidad;
     document.getElementById('nivelCertificacion').value = tecnico.nivelCertificacion;
     new bootstrap.Modal(document.getElementById('tecnicoModal')).show();
 }
-
 async function saveTecnico() {
     const id = document.getElementById('legajoTecnico').value;
     const tecnico = {
@@ -233,14 +337,12 @@ async function saveTecnico() {
     bootstrap.Modal.getInstance(document.getElementById('tecnicoModal')).hide();
     loadTecnicos();
 }
-
 async function deleteTecnico(id) {
     if (confirm('¿Eliminar?')) {
         await fetch(`${apiUrl}/Tecnicos/${id}`, { method: 'DELETE' });
         loadTecnicos();
     }
 }
-
 function editAcuerdo(acuerdo) {
     document.getElementById('idAcuerdo').value = acuerdo.idAcuerdo;
     document.getElementById('fechaInicio').value = acuerdo.fechaInicio.split('T')[0];
@@ -250,7 +352,6 @@ function editAcuerdo(acuerdo) {
     document.getElementById('idEstablecimientoAcuerdo').value = acuerdo.idEstablecimiento;
     new bootstrap.Modal(document.getElementById('acuerdoModal')).show();
 }
-
 async function saveAcuerdo() {
     const id = document.getElementById('idAcuerdo').value;
     const acuerdo = {
@@ -270,36 +371,10 @@ async function saveAcuerdo() {
     });
     bootstrap.Modal.getInstance(document.getElementById('acuerdoModal')).hide();
     loadAcuerdos();
-    loadProximosAcuerdos();
-}
-
-async function deleteAcuerdo(id) {
-    if (confirm('¿Eliminar?')) {
-        await fetch(`${apiUrl}/Acuerdos/${id}`, { method: 'DELETE' });
-        loadAcuerdos();
+    if (document.getElementById('seccionProximos')?.style.display === 'block') {
         loadProximosAcuerdos();
     }
 }
-
-async function loadProximosAcuerdos() {
-    const response = await fetch(`${apiUrl}/Acuerdos/proximosAFinalizar`);
-    const proximos = await response.json();
-    const list = document.getElementById('proximosList');
-    list.innerHTML = '';
-    proximos.forEach(p => {
-        const card = `
-            <div class="col-md-4">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body">
-                        <h5 class="card-title">ID: ${p.idAcuerdo}</h5>
-                        <p class="card-text">Fin: ${new Date(p.fechaFin).toLocaleDateString('es-AR')}</p>
-                    </div>
-                </div>
-            </div>`;
-        list.innerHTML += card;
-    });
-}
-
 // ==================== REPOSITORES ====================
 async function loadRepositores() {
     const response = await fetch(`${apiUrl}/Repositores`);
@@ -327,12 +402,10 @@ async function loadRepositores() {
             </div>`;
         list.innerHTML += card;
     });
-
     if (repositores.length === 0) {
         list.innerHTML = '<div class="col-12"><p class="text-muted text-center">No hay repositores registrados.</p></div>';
     }
 }
-
 // ==================== TÉCNICOS ====================
 async function loadTecnicos() {
     const response = await fetch(`${apiUrl}/Tecnicos`);
@@ -359,7 +432,6 @@ async function loadTecnicos() {
             </div>`;
         list.innerHTML += card;
     });
-
     if (tecnicos.length === 0) {
         list.innerHTML = '<div class="col-12"><p class="text-muted text-center">No hay técnicos registrados.</p></div>';
     }
