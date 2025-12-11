@@ -25,23 +25,19 @@
     </nav>
 
     <div class="container mt-5">
-        <h2>Gestión de Acuerdos</h2>
-        
-        <div class="d-flex gap-3 mb-4">
-            <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#acuerdoModal">
-                Agregar Acuerdo
-            </button>
-            <button id="btnProximos" class="btn btn-warning btn-lg">
-                Próximos a Finalizar
-            </button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 id="tituloPagina">Gestión de Acuerdos</h2>
+            <div class="d-flex gap-3">
+                <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#acuerdoModal">
+                    Agregar Acuerdo
+                </button>
+                <button id="btnProximos" class="btn btn-warning btn-lg">
+                    Próximos a Finalizar
+                </button>
+            </div>
         </div>
 
         <div class="row" id="acuerdosList"></div>
-
-        <div id="seccionProximos" style="display: none; margin-top: 3rem;">
-            <h3 class="text-warning fw-bold">Acuerdos Próximos a Finalizar</h3>
-            <div class="row" id="proximosList"></div>
-        </div>
     </div>
 
     <div class="modal fade" id="acuerdoModal" tabindex="-1" aria-hidden="true">
@@ -90,21 +86,30 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
     <script>
+        let mostrandoProximos = false;
+
         loadAcuerdos();
 
         document.getElementById('btnProximos').addEventListener('click', async function () {
-            const seccion = document.getElementById('seccionProximos');
-            if (seccion.style.display === 'none' || seccion.style.display === '') {
-                seccion.style.display = 'block';
+            const titulo = document.getElementById('tituloPagina');
+            const lista = document.getElementById('acuerdosList');
+
+            if (!mostrandoProximos) {
+                // Mostrar solo próximos
+                titulo.textContent = 'Acuerdos Próximos a Finalizar';
                 this.classList.remove('btn-warning');
                 this.classList.add('btn-outline-warning');
-                this.innerHTML = 'Ocultar Próximos';
+                this.textContent = 'Ver Todos';
                 await loadProximosAcuerdos();
+                mostrandoProximos = true;
             } else {
-                seccion.style.display = 'none';
+                // Volver a todos
+                titulo.textContent = 'Gestión de Acuerdos';
                 this.classList.remove('btn-outline-warning');
                 this.classList.add('btn-warning');
-                this.innerHTML = 'Próximos a Finalizar';
+                this.textContent = 'Próximos a Finalizar';
+                await loadAcuerdos();
+                mostrandoProximos = false;
             }
         });
     </script>

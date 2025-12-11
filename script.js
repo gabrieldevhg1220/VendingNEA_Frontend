@@ -1,4 +1,4 @@
-const apiUrl = 'http://localhost:5048/api'; // Ajusta al port de tu backend
+const apiUrl = 'http://localhost:5048/api';
 
 // Cargar SweetAlert2 desde CDN
 const swLink = document.createElement('script');
@@ -68,7 +68,7 @@ async function loadEmpleados() {
     });
 }
 
-// ==================== ACUERDOS ====================
+// ==================== ACUERDOS (TODOS) ====================
 async function loadAcuerdos() {
     const response = await fetch(`${apiUrl}/Acuerdos`);
     const acuerdos = await response.json();
@@ -98,15 +98,15 @@ async function loadAcuerdos() {
     });
 }
 
-// ==================== PRÓXIMOS A FINALIZAR (INFORMACIÓN COMPLETA) ====================
+// ==================== PRÓXIMOS A FINALIZAR (REEMPLAZA LA LISTA PRINCIPAL) ====================
 async function loadProximosAcuerdos() {
     const response = await fetch(`${apiUrl}/Acuerdos/proximosAFinalizar`);
     const proximos = await response.json();
-    const list = document.getElementById('proximosList');
+    const list = document.getElementById('acuerdosList');
     list.innerHTML = '';
 
     if (proximos.length === 0) {
-        list.innerHTML = '<div class="col-12"><p class="text-muted text-center">No hay acuerdos próximos a finalizar en los próximos 30 días.</p></div>';
+        list.innerHTML = '<div class="col-12"><p class="text-center text-muted fs-4">No hay acuerdos próximos a finalizar en los próximos 30 días.</p></div>';
         return;
     }
 
@@ -123,6 +123,10 @@ async function loadProximosAcuerdos() {
                         <p class="card-text"><strong>Fin:</strong> <strong class="text-danger">${new Date(a.fechaFin).toLocaleDateString('es-AR')}</strong></p>
                         <p class="card-text"><strong>Tipo Condición:</strong> ${a.tipoCondicion}</p>
                         <p class="card-text"><strong>Valor:</strong> $${parseFloat(a.valorCondicion).toFixed(2)}</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <button class="btn btn-primary btn-sm" onclick="editAcuerdo(${JSON.stringify(a)})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAcuerdo(${a.idAcuerdo})">Eliminar</button>
                     </div>
                 </div>
             </div>`;
@@ -142,9 +146,7 @@ async function deleteMaquina(id) {
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
     });
-
     if (!result.isConfirmed) return;
-
     try {
         const response = await fetch(`${apiUrl}/Maquinas/${id}`, { method: 'DELETE' });
         if (response.ok) {
@@ -170,9 +172,7 @@ async function deleteEmpleado(id) {
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
     });
-
     if (!result.isConfirmed) return;
-
     try {
         const response = await fetch(`${apiUrl}/Empleados/${id}`, { method: 'DELETE' });
         if (response.ok) {
@@ -198,17 +198,12 @@ async function deleteAcuerdo(id) {
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
     });
-
     if (!result.isConfirmed) return;
-
     try {
         const response = await fetch(`${apiUrl}/Acuerdos/${id}`, { method: 'DELETE' });
         if (response.ok) {
             Swal.fire('¡Eliminado!', 'El acuerdo ha sido eliminado.', 'success');
             loadAcuerdos();
-            if (document.getElementById('seccionProximos')?.style.display === 'block') {
-                loadProximosAcuerdos();
-            }
         } else {
             const error = await response.json();
             Swal.fire('Error', error.message || 'No se pudo eliminar el acuerdo', 'error');
@@ -371,9 +366,6 @@ async function saveAcuerdo() {
     });
     bootstrap.Modal.getInstance(document.getElementById('acuerdoModal')).hide();
     loadAcuerdos();
-    if (document.getElementById('seccionProximos')?.style.display === 'block') {
-        loadProximosAcuerdos();
-    }
 }
 // ==================== REPOSITORES ====================
 async function loadRepositores() {
