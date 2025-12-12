@@ -37,6 +37,17 @@
             </div>
         </div>
 
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Fecha Inicio</label>
+                <input type="date" class="form-control" id="filtroFechaInicio">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Fecha Fin</label>
+                <input type="date" class="form-control" id="filtroFechaFin">
+            </div>
+        </div>
+
         <div class="row" id="acuerdosList"></div>
     </div>
 
@@ -87,15 +98,11 @@
     <script src="script.js"></script>
     <script>
         let mostrandoProximos = false;
-
         loadAcuerdos();
 
         document.getElementById('btnProximos').addEventListener('click', async function () {
             const titulo = document.getElementById('tituloPagina');
-            const lista = document.getElementById('acuerdosList');
-
             if (!mostrandoProximos) {
-                // Mostrar solo próximos
                 titulo.textContent = 'Acuerdos Próximos a Finalizar';
                 this.classList.remove('btn-warning');
                 this.classList.add('btn-outline-warning');
@@ -103,7 +110,6 @@
                 await loadProximosAcuerdos();
                 mostrandoProximos = true;
             } else {
-                // Volver a todos
                 titulo.textContent = 'Gestión de Acuerdos';
                 this.classList.remove('btn-outline-warning');
                 this.classList.add('btn-warning');
@@ -112,6 +118,10 @@
                 mostrandoProximos = false;
             }
         });
+
+        // Filtros en tiempo real
+        document.getElementById('filtroFechaInicio').addEventListener('change', loadAcuerdos);
+        document.getElementById('filtroFechaFin').addEventListener('change', loadAcuerdos);
     </script>
 </body>
 </html>

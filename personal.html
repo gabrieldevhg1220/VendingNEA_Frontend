@@ -9,7 +9,6 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <!-- Mismo navbar -->
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">VendingNEA</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +25,18 @@
     </nav>
     <div class="container mt-5">
         <h2>Gestión de Personal</h2>
+        
+        <div class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" id="filtroDni" placeholder="Buscar por DNI">
+                </div>
+                <div class="col-md-6">
+                    <input type="date" class="form-control" id="filtroFechaIngreso" placeholder="Filtrar por Fecha de Ingreso">
+                </div>
+            </div>
+        </div>
+
         <ul class="nav nav-tabs" id="personalTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="empleados-tab" data-bs-toggle="tab" data-bs-target="#empleados" type="button" role="tab">Empleados</button>
@@ -53,7 +64,7 @@
         </div>
     </div>
 
-    <!-- Modals similares para Empleado, Repositor, Tecnico -->
+    <!-- Modals -->
     <div class="modal fade" id="empleadoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -98,7 +109,7 @@
         </div>
     </div>
 
-    <!-- Modal para Repositor -->
+    <!-- Modal Repositor y Técnico (sin cambios) -->
     <div class="modal fade" id="repositorModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -131,7 +142,6 @@
         </div>
     </div>
 
-    <!-- Modal para Técnico -->
     <div class="modal fade" id="tecnicoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -166,6 +176,10 @@
         loadEmpleados();
         loadRepositores();
         loadTecnicos();
+
+        // Filtros en tiempo real
+        document.getElementById('filtroDni').addEventListener('input', loadEmpleados);
+        document.getElementById('filtroFechaIngreso').addEventListener('change', loadEmpleados);
     </script>
 </body>
 </html>

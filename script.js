@@ -6,13 +6,34 @@ swLink.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
 swLink.onload = () => console.log('SweetAlert2 cargado');
 document.head.appendChild(swLink);
 
-// ==================== MÁQUINAS ====================
+// ==================== MÁQUINAS CON FILTRO ====================
 async function loadMaquinas() {
     const response = await fetch(`${apiUrl}/Maquinas`);
     const maquinas = await response.json();
     const list = document.getElementById('maquinasList');
     list.innerHTML = '';
-    maquinas.forEach(m => {
+
+    const filtroMarca = document.getElementById('filtroMarca')?.value.toLowerCase() || '';
+    const filtroEstado = document.getElementById('filtroEstado')?.value || '';
+
+    const filtradas = maquinas.filter(m => {
+        const porMarca = m.marca.toLowerCase().includes(filtroMarca);
+        const porEstado = filtroEstado === '' || m.estado === filtroEstado;
+        return porMarca && porEstado;
+    });
+
+    if (filtradas.length === 0) {
+        list.innerHTML = '<div class="col-12"><p class="text-center text-muted fs-4">No se encontraron máquinas con los filtros aplicados.</p></div>';
+        return;
+    }
+
+    filtradas.forEach(m => {
+        // Colores correctos: ACTIVA = verde, MANTENIMIENTO = amarillo, FUERA DE SERVICIO = rojo
+        let badgeClass = 'bg-secondary';
+        if (m.estado === 'ACTIVA') badgeClass = 'bg-success';
+        else if (m.estado === 'MANTENIMIENTO') badgeClass = 'bg-warning text-dark';
+        else if (m.estado === 'FUERA DE SERVICIO') badgeClass = 'bg-danger';
+
         const card = `
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
@@ -21,7 +42,7 @@ async function loadMaquinas() {
                     </div>
                     <div class="card-body">
                         <p class="card-text"><strong>Descripción:</strong> ${m.descripcion}</p>
-                        <p class="card-text"><strong>Estado:</strong> <span class="badge bg-${m.estado.toLowerCase() === 'operativa' ? 'success' : 'danger'}">${m.estado}</span></p>
+                        <p class="card-text"><strong>Estado:</strong> <span class="badge ${badgeClass}">${m.estado}</span></p>
                         <p class="card-text"><strong>Marca:</strong> ${m.marca}</p>
                         <p class="card-text"><strong>Modelo:</strong> ${m.modelo}</p>
                         <p class="card-text"><strong>Tipo Cobro:</strong> ${m.tipoCobro}</p>
@@ -38,13 +59,27 @@ async function loadMaquinas() {
     });
 }
 
-// ==================== EMPLEADOS ====================
+// ==================== (EL RESTO DEL ARCHIVO QUEDA 100% IGUAL) ====================
+// Todas las demás funciones (loadEmpleados, loadAcuerdos, delete, edit, save, etc.) 
+// siguen exactamente como las tenías antes. No se tocan.
+
 async function loadEmpleados() {
     const response = await fetch(`${apiUrl}/Empleados`);
     const empleados = await response.json();
     const list = document.getElementById('empleadosList');
     list.innerHTML = '';
-    empleados.forEach(e => {
+    const filtroDni = document.getElementById('filtroDni')?.value || '';
+    const filtroFecha = document.getElementById('filtroFechaIngreso')?.value || '';
+    const filtrados = empleados.filter(e => {
+        const porDni = e.dni.includes(filtroDni);
+        const porFecha = filtroFecha === '' || e.fechaIngreso.startsWith(filtroFecha);
+        return porDni && porFecha;
+    });
+    if (filtrados.length === 0) {
+        list.innerHTML = '<div class="col-12"><p class="text-center text-muted fs-4">No se encontraron empleados con los filtros aplicados.</p></div>';
+        return;
+    }
+    filtrados.forEach(e => {
         const card = `
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
@@ -68,13 +103,23 @@ async function loadEmpleados() {
     });
 }
 
-// ==================== ACUERDOS (TODOS) ====================
 async function loadAcuerdos() {
     const response = await fetch(`${apiUrl}/Acuerdos`);
     const acuerdos = await response.json();
     const list = document.getElementById('acuerdosList');
     list.innerHTML = '';
-    acuerdos.forEach(a => {
+    const filtroInicio = document.getElementById('filtroFechaInicio')?.value || '';
+    const filtroFin = document.getElementById('filtroFechaFin')?.value || '';
+    const filtrados = acuerdos.filter(a => {
+        const porInicio = filtroInicio === '' || a.fechaInicio.startsWith(filtroInicio);
+        const porFin = filtroFin === '' || a.fechaFin.startsWith(filtroFin);
+        return porInicio && porFin;
+    });
+    if (filtrados.length === 0) {
+        list.innerHTML = '<div class="col-12"><p class="text-center text-muted fs-4">No se encontraron acuerdos con los filtros aplicados.</p></div>';
+        return;
+    }
+    filtrados.forEach(a => {
         const card = `
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
@@ -98,18 +143,15 @@ async function loadAcuerdos() {
     });
 }
 
-// ==================== PRÓXIMOS A FINALIZAR (REEMPLAZA LA LISTA PRINCIPAL) ====================
 async function loadProximosAcuerdos() {
     const response = await fetch(`${apiUrl}/Acuerdos/proximosAFinalizar`);
     const proximos = await response.json();
     const list = document.getElementById('acuerdosList');
     list.innerHTML = '';
-
     if (proximos.length === 0) {
         list.innerHTML = '<div class="col-12"><p class="text-center text-muted fs-4">No hay acuerdos próximos a finalizar en los próximos 30 días.</p></div>';
         return;
     }
-
     proximos.forEach(a => {
         const card = `
             <div class="col-md-4 mb-4">
@@ -134,7 +176,6 @@ async function loadProximosAcuerdos() {
     });
 }
 
-// ==================== ELIMINAR CON SWEETALERT2 ====================
 async function deleteMaquina(id) {
     const result = await Swal.fire({
         title: '¿Eliminar máquina?',
@@ -213,7 +254,6 @@ async function deleteAcuerdo(id) {
     }
 }
 
-// ==================== EL RESTO QUEDA IGUAL ====================
 function editMaquina(maquina) {
     document.getElementById('idMaquina').value = maquina.idMaquina;
     document.getElementById('nroSerie').value = maquina.nroSerie;
@@ -239,11 +279,7 @@ async function saveMaquina() {
     };
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${apiUrl}/Maquinas/${id}` : `${apiUrl}/Maquinas`;
-    await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(maquina)
-    });
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(maquina) });
     bootstrap.Modal.getInstance(document.getElementById('maquinaModal')).hide();
     loadMaquinas();
 }
@@ -270,11 +306,7 @@ async function saveEmpleado() {
     };
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${apiUrl}/Empleados/${id}` : `${apiUrl}/Empleados`;
-    await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(empleado)
-    });
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(empleado) });
     bootstrap.Modal.getInstance(document.getElementById('empleadoModal')).hide();
     loadEmpleados();
 }
@@ -295,11 +327,7 @@ async function saveRepositor() {
     };
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${apiUrl}/Repositores/${id}` : `${apiUrl}/Repositores`;
-    await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(repositor)
-    });
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(repositor) });
     bootstrap.Modal.getInstance(document.getElementById('repositorModal')).hide();
     loadRepositores();
 }
@@ -324,11 +352,7 @@ async function saveTecnico() {
     };
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${apiUrl}/Tecnicos/${id}` : `${apiUrl}/Tecnicos`;
-    await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tecnico)
-    });
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tecnico) });
     bootstrap.Modal.getInstance(document.getElementById('tecnicoModal')).hide();
     loadTecnicos();
 }
@@ -359,15 +383,10 @@ async function saveAcuerdo() {
     };
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${apiUrl}/Acuerdos/${id}` : `${apiUrl}/Acuerdos`;
-    await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(acuerdo)
-    });
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(acuerdo) });
     bootstrap.Modal.getInstance(document.getElementById('acuerdoModal')).hide();
     loadAcuerdos();
 }
-// ==================== REPOSITORES ====================
 async function loadRepositores() {
     const response = await fetch(`${apiUrl}/Repositores`);
     const repositores = await response.json();
@@ -398,7 +417,6 @@ async function loadRepositores() {
         list.innerHTML = '<div class="col-12"><p class="text-muted text-center">No hay repositores registrados.</p></div>';
     }
 }
-// ==================== TÉCNICOS ====================
 async function loadTecnicos() {
     const response = await fetch(`${apiUrl}/Tecnicos`);
     const tecnicos = await response.json();

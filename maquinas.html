@@ -9,7 +9,6 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <!-- Mismo navbar que index.html -->
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">VendingNEA</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,10 +25,29 @@
     </nav>
     <div class="container mt-5">
         <h2>Gestión de Máquinas Expendedoras</h2>
-        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#maquinaModal">Agregar Máquina</button>
+       
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#maquinaModal">Agregar Máquina</button>
+            </div>
+            <div class="col-md-6">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="filtroMarca" placeholder="Filtrar por Marca">
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" id="filtroEstado">
+                            <option value="">Todos los Estados</option>
+                            <option value="ACTIVA">ACTIVA</option>
+                            <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                            <option value="FUERA DE SERVICIO">FUERA DE SERVICIO</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row" id="maquinasList"></div>
     </div>
-
     <!-- Modal para CRUD -->
     <div class="modal fade" id="maquinaModal" tabindex="-1" aria-labelledby="maquinaModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -51,7 +69,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="estado" class="form-label">Estado</label>
-                            <input type="text" class="form-control" id="estado" required>
+                            <select class="form-select" id="estado" required>
+                                <option value="ACTIVA">ACTIVA</option>
+                                <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                                <option value="FUERA DE SERVICIO">FUERA DE SERVICIO</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="marca" class="form-label">Marca</label>
@@ -81,11 +103,13 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
     <script>
         loadMaquinas();
+        // Filtros en tiempo real
+        document.getElementById('filtroMarca').addEventListener('input', loadMaquinas);
+        document.getElementById('filtroEstado').addEventListener('change', loadMaquinas);
     </script>
 </body>
 </html>
